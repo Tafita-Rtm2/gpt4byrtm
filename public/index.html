@@ -3,25 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot</title>
     <link rel="stylesheet" href="styles.css">
-    <title>Chatbot</title>
 </head>
 <body>
-    <div class="chat-container">
-        <header>
-            <h1>ChatBot</h1>
-        </header>
-        <main id="chat">
-            <!-- Messages affichés ici -->
-        </main>
-        <footer>
-            <form id="message-form">
-                <input type="text" id="user-input" placeholder="Posez une question..." autocomplete="off">
-                <input type="file" id="file-input" accept="image/*" hidden>
-                <label for="file-input" id="upload-label">📷</label>
-                <button type="submit">Envoyer</button>
-            </form>
-        </footer>
+    <div id="chat-container">
+        <h1>ChatBot</h1>
+        <div id="chat"></div>
+        <form id="message-form">
+            <input id="user-input" type="text" placeholder="Écrivez un message..." />
+            <input id="file-input" type="file" accept="image/*" />
+            <button type="submit">Envoyer</button>
+        </form>
     </div>
     <script src="script.js"></script>
 </body>
