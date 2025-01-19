@@ -5,11 +5,15 @@ const fileInput = document.getElementById('file-input');
 
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const userMessage = input.value;
-    if (userMessage.trim()) {
+    const userMessage = input.value.trim();
+    if (userMessage) {
         addMessage(userMessage, 'user');
-        const response = await fetchMessage(userMessage);
-        addMessage(response, 'bot');
+        try {
+            const response = await sendMessage({ message: userMessage });
+            addMessage(response, 'bot');
+        } catch (error) {
+            addMessage("Erreur lors de la communication avec le serveur.", 'bot');
+        }
     }
     input.value = '';
 });
@@ -19,8 +23,12 @@ fileInput.addEventListener('change', async () => {
     if (file) {
         const fileURL = await uploadFile(file);
         addMessage('Image envoyée.', 'user', fileURL);
-        const response = await fetchMessage(fileURL, true);
-        addMessage(response, 'bot');
+        try {
+            const response = await sendMessage({ imageUrl: fileURL });
+            addMessage(response, 'bot');
+        } catch (error) {
+            addMessage("Erreur lors de la communication avec le serveur.", 'bot');
+        }
     }
 });
 
@@ -49,19 +57,20 @@ function addMessage(content, sender, fileURL = null) {
     chat.scrollTop = chat.scrollHeight;
 }
 
-async function fetchMessage(input, isImage = false) {
-    const url = isImage
-        ? `https://kaiz-apis.gleeze.com/api/gemini-vision?q=&uid=1&imageUrl=${input}`
-        : `https://kaiz-apis.gleeze.com/api/gemini-vision?q=${input}&uid=1`;
-    const response = await fetch(url);
-    const data = await response.json();
-    return data.response;
+async function sendMessage(data) {
+    const response = await fetch('/api/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        throw new Error('Erreur serveur');
+    }
+    const result = await response.json();
+    return result.response;
 }
 
 async function uploadFile(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    // Remplacez par une URL d'upload si nécessaire.
     const fileURL = URL.createObjectURL(file);
     return fileURL;
 }
