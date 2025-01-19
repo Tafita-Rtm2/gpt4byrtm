@@ -7,15 +7,16 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="chat-container">
-        <h1>ChatBot</h1>
-        <div id="chat"></div>
-        <form id="message-form">
-            <input id="user-input" type="text" placeholder="Écrivez un message..." />
-            <input id="file-input" type="file" accept="image/*" />
-            <button type="submit">Envoyer</button>
-        </form>
-    </div>
+    <div id="chat-interface">
+    <form id="chat-form">
+        <input type="text" id="chat-input" placeholder="Écrivez un message..." />
+        <label for="file-input">
+            <img src="camera-icon.png" alt="Envoyer une image" class="icon">
+        </label>
+        <input type="file" id="file-input" style="display: none;" />
+        <button type="submit">Envoyer</button>
+    </form>
+</div>
     <script src="script.js"></script>
 </body>
 </html>
