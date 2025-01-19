@@ -3,6 +3,7 @@ const messageInput = document.getElementById("message-input");
 const sendButton = document.getElementById("send-button");
 const imageInput = document.getElementById("image-input");
 
+// Fonction pour ajouter un message dans le chat
 function addMessage(author, content, isImage = false) {
   const messageDiv = document.createElement("div");
   messageDiv.classList.add("message");
@@ -23,37 +24,51 @@ function addMessage(author, content, isImage = false) {
   messageDiv.appendChild(avatar);
   messageDiv.appendChild(text);
   messagesDiv.appendChild(messageDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroller vers le bas
 }
 
+// Gérer l'envoi d'un message texte
 sendButton.addEventListener("click", async () => {
   const message = messageInput.value.trim();
   if (message) {
-    addMessage("user", message);
-    messageInput.value = "";
+    addMessage("user", message); // Afficher le message utilisateur
+    messageInput.value = ""; // Vider le champ de saisie
 
-    const response = await fetch("/api/message", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
-    });
-    const data = await response.json();
-    addMessage("bot", data.response);
+    try {
+      const response = await fetch("/api/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      });
+      const data = await response.json();
+      addMessage("bot", data.response); // Afficher la réponse du bot
+    } catch (error) {
+      addMessage("bot", "Erreur : Impossible de se connecter au serveur.");
+    }
   }
 });
 
+// Gérer l'envoi d'une image
 imageInput.addEventListener("change", async (event) => {
   const file = event.target.files[0];
   if (file) {
     const formData = new FormData();
     formData.append("image", file);
 
-    const response = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    addMessage("user", URL.createObjectURL(file), true);
-    addMessage("bot", data.response);
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+
+      // Afficher l'image envoyée par l'utilisateur
+      addMessage("user", URL.createObjectURL(file), true);
+
+      // Afficher la réponse du bot
+      addMessage("bot", data.response);
+    } catch (error) {
+      addMessage("bot", "Erreur : Impossible de traiter l'image.");
+    }
   }
 });
