@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Chatbot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Chatbot</title>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="messages" id="messages"></div>
-
-    <!-- Champ de saisie -->
-    <div class="input-container">
-      <input type="file" id="image-input" accept="image/*" style="display:none;">
-      <label for="image-input" class="upload-label">📷</label>
-
-      <input type="text" id="message-input" placeholder="Écrivez un message...">
-      <button id="send-button">Envoyer</button>
+    <div class="chat-container">
+        <header>
+            <h1>ChatBot</h1>
+        </header>
+        <main id="chat">
+            <!-- Messages affichés ici -->
+        </main>
+        <footer>
+            <form id="message-form">
+                <input type="text" id="user-input" placeholder="Posez une question..." autocomplete="off">
+                <input type="file" id="file-input" accept="image/*" hidden>
+                <label for="file-input" id="upload-label">📷</label>
+                <button type="submit">Envoyer</button>
+            </form>
+        </footer>
     </div>
-  </div>
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
