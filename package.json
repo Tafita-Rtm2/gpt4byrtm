@@ -1,16 +1,22 @@
 {
   "name": "chatbot",
   "version": "1.0.0",
-  "description": "Chatbot fonctionnel avec support d'image et API",
+  "description": "Un chatbot avec une interface utilisateur et un backend Node.js",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
+  "keywords": ["chatbot", "nodejs", "express", "API"],
+  "author": "VotreNom",
+  "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "multer": "*",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.1"
   },
-  "author": "Votre Nom",
-  "license": "MIT"
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
 }
