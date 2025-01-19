@@ -2,17 +2,36 @@ const chatForm = document.querySelector('#chat-form');
 const chatInput = document.querySelector('#chat-input');
 const chatContainer = document.querySelector('#chat-container');
 
+// Charger les messages sauvegardés au démarrage
+document.addEventListener('DOMContentLoaded', () => {
+    const savedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+    savedMessages.forEach(({ author, message }) => {
+        addMessage(author, message);
+    });
+    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
+});
+
 // Fonction pour ajouter un message
-function addMessage(author, message, avatar) {
+function addMessage(author, message) {
     const messageElement = document.createElement('div');
-    messageElement.classList.add('message', author === 'user' ? 'user' : 'bot');
+    messageElement.classList.add('message', author);
 
     messageElement.innerHTML = `
+        <img src="${author === 'user' ? 'user.jpg' : 'robot.jpg'}" alt="${author}" />
         <div class="text">${message}</div>
     `;
 
     chatContainer.appendChild(messageElement);
     chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
+
+    saveMessage(author, message); // Sauvegarder dans LocalStorage
+}
+
+// Sauvegarder les messages dans LocalStorage
+function saveMessage(author, message) {
+    const chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+    chatMessages.push({ author, message });
+    localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
 }
 
 // Gérer l'envoi de messages
