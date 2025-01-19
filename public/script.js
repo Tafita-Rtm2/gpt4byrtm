@@ -1,74 +1,67 @@
-const messagesDiv = document.getElementById("messages");
-const messageInput = document.getElementById("message-input");
-const sendButton = document.getElementById("send-button");
-const imageInput = document.getElementById("image-input");
+const chat = document.getElementById('chat');
+const form = document.getElementById('message-form');
+const input = document.getElementById('user-input');
+const fileInput = document.getElementById('file-input');
 
-// Fonction pour ajouter un message dans le chat
-function addMessage(author, content, isImage = false) {
-  const messageDiv = document.createElement("div");
-  messageDiv.classList.add("message");
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const userMessage = input.value;
+    if (userMessage.trim()) {
+        addMessage(userMessage, 'user');
+        const response = await fetchMessage(userMessage);
+        addMessage(response, 'bot');
+    }
+    input.value = '';
+});
 
-  const avatar = document.createElement("img");
-  avatar.src = author === "bot" ? "robot.jpg" : "user.jpg";
+fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (file) {
+        const fileURL = await uploadFile(file);
+        addMessage('Image envoyée.', 'user', fileURL);
+        const response = await fetchMessage(fileURL, true);
+        addMessage(response, 'bot');
+    }
+});
 
-  const text = document.createElement("div");
-  if (isImage) {
-    const img = document.createElement("img");
-    img.src = content;
-    img.style.maxWidth = "100%";
-    text.appendChild(img);
-  } else {
-    text.textContent = content;
-  }
+function addMessage(content, sender, fileURL = null) {
+    const message = document.createElement('div');
+    message.classList.add('message', sender);
 
-  messageDiv.appendChild(avatar);
-  messageDiv.appendChild(text);
-  messagesDiv.appendChild(messageDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroller vers le bas
+    const img = document.createElement('img');
+    img.src = sender === 'bot' ? 'robot.jpg' : 'user.jpg';
+
+    const contentDiv = document.createElement('div');
+    contentDiv.classList.add('content');
+
+    if (fileURL) {
+        const imgElement = document.createElement('img');
+        imgElement.src = fileURL;
+        imgElement.style.maxWidth = '200px';
+        contentDiv.appendChild(imgElement);
+    } else {
+        contentDiv.textContent = content;
+    }
+
+    message.appendChild(img);
+    message.appendChild(contentDiv);
+    chat.appendChild(message);
+    chat.scrollTop = chat.scrollHeight;
 }
 
-// Gérer l'envoi d'un message texte
-sendButton.addEventListener("click", async () => {
-  const message = messageInput.value.trim();
-  if (message) {
-    addMessage("user", message); // Afficher le message utilisateur
-    messageInput.value = ""; // Vider le champ de saisie
+async function fetchMessage(input, isImage = false) {
+    const url = isImage
+        ? `https://kaiz-apis.gleeze.com/api/gemini-vision?q=&uid=1&imageUrl=${input}`
+        : `https://kaiz-apis.gleeze.com/api/gemini-vision?q=${input}&uid=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return data.response;
+}
 
-    try {
-      const response = await fetch("/api/message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-      });
-      const data = await response.json();
-      addMessage("bot", data.response); // Afficher la réponse du bot
-    } catch (error) {
-      addMessage("bot", "Erreur : Impossible de se connecter au serveur.");
-    }
-  }
-});
-
-// Gérer l'envoi d'une image
-imageInput.addEventListener("change", async (event) => {
-  const file = event.target.files[0];
-  if (file) {
+async function uploadFile(file) {
     const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-
-      // Afficher l'image envoyée par l'utilisateur
-      addMessage("user", URL.createObjectURL(file), true);
-
-      // Afficher la réponse du bot
-      addMessage("bot", data.response);
-    } catch (error) {
-      addMessage("bot", "Erreur : Impossible de traiter l'image.");
-    }
-  }
-});
+    formData.append('file', file);
+    // Remplacez par une URL d'upload si nécessaire.
+    const fileURL = URL.createObjectURL(file);
+    return fileURL;
+}
