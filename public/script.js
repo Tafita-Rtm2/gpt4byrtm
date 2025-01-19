@@ -1,43 +1,59 @@
-const chatWindow = document.getElementById("chat-window");
-const chatForm = document.getElementById("chat-form");
-const chatInput = document.getElementById("chat-input");
+const messagesDiv = document.getElementById("messages");
+const messageInput = document.getElementById("message-input");
+const sendButton = document.getElementById("send-button");
+const imageInput = document.getElementById("image-input");
 
-// Ajouter un message au chat
-function addMessage(message, isBot = false) {
+function addMessage(author, content, isImage = false) {
   const messageDiv = document.createElement("div");
-  messageDiv.className = isBot ? "bot-message" : "user-message";
+  messageDiv.classList.add("message");
 
   const avatar = document.createElement("img");
-  avatar.src = isBot ? "robot.jpg" : "user.jpg";
-  avatar.className = "avatar";
+  avatar.src = author === "bot" ? "robot.jpg" : "user.jpg";
 
-  const messageText = document.createElement("div");
-  messageText.className = "message-text";
-  messageText.textContent = message;
+  const text = document.createElement("div");
+  if (isImage) {
+    const img = document.createElement("img");
+    img.src = content;
+    img.style.maxWidth = "100%";
+    text.appendChild(img);
+  } else {
+    text.textContent = content;
+  }
 
-  messageDiv.appendChild(isBot ? avatar : messageText);
-  messageDiv.appendChild(isBot ? messageText : avatar);
-
-  chatWindow.appendChild(messageDiv);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
+  messageDiv.appendChild(avatar);
+  messageDiv.appendChild(text);
+  messagesDiv.appendChild(messageDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// Gérer les messages texte
-chatForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const userMessage = chatInput.value.trim();
-  if (!userMessage) return;
+sendButton.addEventListener("click", async () => {
+  const message = messageInput.value.trim();
+  if (message) {
+    addMessage("user", message);
+    messageInput.value = "";
 
-  addMessage(userMessage);
+    const response = await fetch("/api/message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    const data = await response.json();
+    addMessage("bot", data.response);
+  }
+});
 
-  const response = await fetch("/api/message", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: userMessage }),
-  });
-  const data = await response.json();
+imageInput.addEventListener("change", async (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const formData = new FormData();
+    formData.append("image", file);
 
-  addMessage(data.response, true);
-
-  chatInput.value = "";
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    addMessage("user", URL.createObjectURL(file), true);
+    addMessage("bot", data.response);
+  }
 });
