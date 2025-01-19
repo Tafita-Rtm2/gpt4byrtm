@@ -1,38 +1,31 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
-const fetch = require('node-fetch'); // Importer fetch
+const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public')); // Servir les fichiers statiques
+app.use(express.static('public'));
 
-// API pour gérer les messages du chatbot
-app.post('/api/message', async (req, res) => {
-    const { message, imageUrl } = req.body;
-
-    let url = '';
-    if (imageUrl) {
-        url = `https://kaiz-apis.gleeze.com/api/gemini-vision?q=&uid=1&imageUrl=${encodeURIComponent(imageUrl)}`;
-    } else {
-        url = `https://kaiz-apis.gleeze.com/api/gemini-vision?q=${encodeURIComponent(message)}&uid=1`;
-    }
+app.post('/chat', async (req, res) => {
+    const { message } = req.body;
 
     try {
-        const response = await fetch(url);
-        const data = await response.json();
-        res.json({ response: data.response || 'Pas de réponse.' });
+        const apiResponse = await fetch(`https://kaiz-apis.gleeze.com/api/gpt-4o?q=${encodeURIComponent(message)}&uid=1`);
+        const data = await apiResponse.json();
+
+        if (data.response) {
+            res.json({ author: "bot", response: data.response });
+        } else {
+            res.status(500).json({ error: "Erreur lors de la réponse de l'API." });
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ response: 'Erreur avec l\'API externe.' });
+        res.status(500).json({ error: "Erreur lors de la communication avec l'API." });
     }
 });
 
-// Lancer le serveur
+const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Serveur lancé sur http://localhost:${PORT}`);
+    console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
