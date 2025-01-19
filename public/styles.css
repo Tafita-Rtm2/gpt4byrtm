@@ -1,19 +1,28 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
     margin: 0;
     padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .chat-container {
-    width: 400px;
-    margin: 50px auto;
-    background: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    overflow: hidden;
+    width: 100%;
+    max-width: 600px;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .chat-header {
@@ -21,19 +30,21 @@ body {
     color: white;
     padding: 15px;
     text-align: center;
+    font-size: 18px;
 }
 
 .chat-messages {
     flex: 1;
     padding: 15px;
     overflow-y: auto;
-    max-height: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .message {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
 }
 
 .message.user {
@@ -44,8 +55,20 @@ body {
     justify-content: flex-start;
 }
 
+.message img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.message.user img {
+    margin-left: 10px;
+    margin-right: 0;
+}
+
 .message .text {
-    max-width: 60%;
+    max-width: 70%;
     padding: 10px;
     border-radius: 10px;
     font-size: 14px;
@@ -54,16 +77,19 @@ body {
 .message.user .text {
     background-color: #007bff;
     color: white;
+    text-align: right;
 }
 
 .message.bot .text {
     background-color: #f0f0f0;
     color: black;
+    text-align: left;
 }
 
 .chat-input-area {
     display: flex;
     border-top: 1px solid #ddd;
+    padding: 10px;
 }
 
 #chat-input {
@@ -71,6 +97,7 @@ body {
     padding: 10px;
     border: none;
     outline: none;
+    font-size: 16px;
 }
 
 button {
@@ -79,4 +106,5 @@ button {
     border: none;
     padding: 10px 15px;
     cursor: pointer;
+    font-size: 16px;
 }
