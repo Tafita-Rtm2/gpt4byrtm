@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js"
   },
-  "author": "Votre Nom",
+  "author": "rtm tafitaniaina",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
