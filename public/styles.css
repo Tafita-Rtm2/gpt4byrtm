@@ -108,3 +108,8 @@ button {
     cursor: pointer;
     font-size: 16px;
 }
+
+.typing-indicator {
+    font-style: italic;
+    color: #aaa;
+}
