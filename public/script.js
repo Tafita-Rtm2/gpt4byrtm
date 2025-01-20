@@ -34,6 +34,26 @@ function saveMessage(author, message) {
     localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
 }
 
+// Ajouter une indication de "Typing..."
+function showTypingIndicator() {
+    const typingElement = document.createElement('div');
+    typingElement.classList.add('message', 'bot', 'typing-indicator');
+    typingElement.innerHTML = `
+        <img src="robot.jpg" alt="bot" />
+        <div class="text">Typing...</div>
+    `;
+    chatContainer.appendChild(typingElement);
+    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
+    return typingElement;
+}
+
+// Supprimer l'indicateur "Typing..."
+function removeTypingIndicator(typingElement) {
+    if (typingElement) {
+        chatContainer.removeChild(typingElement);
+    }
+}
+
 // Gérer l'envoi de messages
 chatForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -43,6 +63,9 @@ chatForm.addEventListener('submit', async (event) => {
 
     // Ajouter le message utilisateur
     addMessage('user', userMessage);
+
+    // Ajouter l'indicateur "Typing..."
+    const typingIndicator = showTypingIndicator();
 
     // Envoyer la requête au serveur
     try {
@@ -54,13 +77,15 @@ chatForm.addEventListener('submit', async (event) => {
 
         const data = await response.json();
 
-        // Ajouter la réponse du bot
+        // Supprimer l'indicateur "Typing..." et ajouter la réponse du bot
+        removeTypingIndicator(typingIndicator);
         if (data.response) {
             addMessage('bot', data.response);
         } else {
             addMessage('bot', 'Le bot ne répond pas actuellement.');
         }
     } catch (error) {
+        removeTypingIndicator(typingIndicator);
         addMessage('bot', 'Erreur lors de la communication avec le serveur.');
     }
 
