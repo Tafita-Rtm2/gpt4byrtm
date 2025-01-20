@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const fetch = require('node-fetch'); // Assurez-vous que ce package est installé
 
 const app = express();
 app.use(cors());
@@ -11,7 +12,8 @@ app.post('/chat', async (req, res) => {
     const { message } = req.body;
 
     try {
-        const apiResponse = await fetch(`https://kaiz-apis.gleeze.com/api/gpt-4o?q=${encodeURIComponent(message)}&uid=1`);
+        // Remplacement de l'API URL
+        const apiResponse = await fetch(`https://yt-video-production.up.railway.app/gpt4-omni?ask=${encodeURIComponent(message)}&userid=1`);
         const data = await apiResponse.json();
 
         if (data.response) {
