@@ -40,7 +40,7 @@ function showTypingIndicator() {
     typingElement.classList.add('message', 'bot', 'typing-indicator');
     typingElement.innerHTML = `
         <img src="robot.jpg" alt="bot" />
-        <div class="text">Typing...</div>
+        <div class="text">reponse en cours je suis en train de traiter votre reponse veuiller patienter😇⚙...</div>
     `;
     chatContainer.appendChild(typingElement);
     chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
