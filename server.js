@@ -18,7 +18,7 @@ app.post('/chat', async (req, res) => {
             // Téléchargement de l'image sur imgbb
             const formData = new FormData();
             formData.append('image', image);
-            formData.append('key', 'VOTRE_CLE_IMGBB'); // Remplacez par votre clé API imgbb
+            formData.append('key', '6fef3d0d57641305c16bd5c0b5e27426'); // Remplacez par votre clé API imgbb
 
             const imgbbResponse = await fetch('https://api.imgbb.com/1/upload', {
                 method: 'POST',
