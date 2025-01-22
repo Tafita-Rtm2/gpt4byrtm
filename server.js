@@ -2,36 +2,55 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+// Endpoint pour le chatbot
 app.post('/chat', async (req, res) => {
-    const { message, imageUrl } = req.body;
+    const { message, image } = req.body;
 
     try {
-        let response;
+        if (image) {
+            // Téléchargement de l'image sur imgbb
+            const formData = new FormData();
+            formData.append('image', image);
+            formData.append('key', 'VOTRE_CLE_IMGBB'); // Remplacez par votre clé API imgbb
 
-        if (imageUrl) {
-            // Si une image et un message sont envoyés, appeler l'API image
-            const apiResponse = await fetch(`https://sandipbaruwal.onrender.com/gemini2?url=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(message || '')}`);
-            response = await apiResponse.json();
-        } else {
-            // Si seulement un message texte, appeler l'API texte
-            const apiResponse = await fetch(`https://yt-video-production.up.railway.app/gpt4-omni?ask=${encodeURIComponent(message)}&userid=1`);
-            response = await apiResponse.json();
-        }
+            const imgbbResponse = await fetch('https://api.imgbb.com/1/upload', {
+                method: 'POST',
+                body: formData,
+            });
 
-        if (response && response.response) {
-            res.json({ author: "bot", response: response.response });
+            const imgbbData = await imgbbResponse.json();
+            if (!imgbbData.success) {
+                throw new Error('Erreur lors du téléchargement de l\'image.');
+            }
+
+            const imageUrl = imgbbData.data.url;
+
+            // Envoi à l'API image
+            const apiResponse = await fetch(
+                `https://sandipbaruwal.onrender.com/gemini2?url=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(message)}`
+            );
+            const data = await apiResponse.json();
+
+            return res.json({ author: 'bot', response: data.response });
         } else {
-            res.status(500).json({ error: "Erreur lors de la réponse de l'API." });
+            // Envoi à l'API texte
+            const apiResponse = await fetch(
+                `https://yt-video-production.up.railway.app/gpt4-omni?ask=${encodeURIComponent(message)}&userid=1`
+            );
+            const data = await apiResponse.json();
+
+            return res.json({ author: 'bot', response: data.response });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Erreur lors de la communication avec l'API." });
+        res.status(500).json({ error: 'Erreur lors de la communication avec l\'API.' });
     }
 });
 
