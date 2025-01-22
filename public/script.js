@@ -1,58 +1,50 @@
 const chatForm = document.querySelector('#chat-form');
 const chatInput = document.querySelector('#chat-input');
+const imageInput = document.querySelector('#image-input');
 const chatContainer = document.querySelector('#chat-container');
-const fileInput = document.querySelector('#file-input');
+
+// Charger les messages sauvegardés au démarrage
+document.addEventListener('DOMContentLoaded', () => {
+    const savedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+    savedMessages.forEach(({ author, message }) => {
+        addMessage(author, message);
+    });
+    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
+});
 
 // Fonction pour ajouter un message
-function addMessage(author, message, imageUrl = null) {
+function addMessage(author, message) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', author);
 
-    if (imageUrl) {
-        messageElement.innerHTML = `
-            <img src="${author === 'user' ? 'user.jpg' : 'robot.jpg'}" alt="${author}" />
-            <div class="text">
-                <p>${message || ''}</p>
-                <img src="${imageUrl}" alt="Image envoyée" style="max-width: 100%; border-radius: 10px;" />
-            </div>
-        `;
-    } else {
-        messageElement.innerHTML = `
-            <img src="${author === 'user' ? 'user.jpg' : 'robot.jpg'}" alt="${author}" />
-            <div class="text">${message}</div>
-        `;
-    }
+    messageElement.innerHTML = `
+        <img src="${author === 'user' ? 'user.jpg' : 'robot.jpg'}" alt="${author}" />
+        <div class="text">${message}</div>
+    `;
 
     chatContainer.appendChild(messageElement);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-    saveMessage(author, message, imageUrl);
+    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
+
+    saveMessage(author, message); // Sauvegarder dans LocalStorage
 }
 
-// Sauvegarder les messages
-function saveMessage(author, message, imageUrl) {
+// Sauvegarder les messages dans LocalStorage
+function saveMessage(author, message) {
     const chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-    chatMessages.push({ author, message, imageUrl });
+    chatMessages.push({ author, message });
     localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
 }
 
-// Ajouter un indicateur de "Typing..."
-function showTypingIndicator(type) {
+// Ajouter une indication de "Typing..."
+function showTypingIndicator() {
     const typingElement = document.createElement('div');
     typingElement.classList.add('message', 'bot', 'typing-indicator');
-
-    if (type === 'upload') {
-        typingElement.innerHTML = `
-            <div class="text">Image en cours de téléchargement...</div>
-        `;
-    } else {
-        typingElement.innerHTML = `
-            <img src="robot.jpg" alt="bot" />
-            <div class="text">Le bot est en train de répondre...</div>
-        `;
-    }
-
+    typingElement.innerHTML = `
+        <img src="robot.jpg" alt="bot" />
+        <div class="text">Je suis en train de traiter votre réponse...</div>
+    `;
     chatContainer.appendChild(typingElement);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
     return typingElement;
 }
 
@@ -68,67 +60,61 @@ chatForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const userMessage = chatInput.value.trim();
-    const file = fileInput.files[0];
-    if (!userMessage && !file) return;
+    const imageFile = imageInput.files[0];
 
-    let imageUrl = null;
-
-    // Indicateur de téléchargement d'image
-    let uploadIndicator;
-    if (file) {
-        uploadIndicator = showTypingIndicator('upload');
-
-        const formData = new FormData();
-        formData.append('image', file);
-
-        try {
-            const uploadResponse = await fetch('https://api.imgbb.com/1/upload?key=VOTRE_CLE_API_IMGBB', {
-                method: 'POST',
-                body: formData,
-            });
-
-            const uploadData = await uploadResponse.json();
-            if (uploadData.success) {
-                imageUrl = uploadData.data.url;
-            } else {
-                addMessage('bot', 'Erreur lors du téléchargement de l\'image.');
-                removeTypingIndicator(uploadIndicator);
-                return;
-            }
-        } catch (error) {
-            addMessage('bot', 'Erreur lors du téléchargement de l\'image.');
-            removeTypingIndicator(uploadIndicator);
-            return;
-        }
-        removeTypingIndicator(uploadIndicator);
-    }
+    if (!userMessage && !imageFile) return;
 
     // Ajouter le message utilisateur
-    addMessage('user', userMessage, imageUrl);
+    addMessage('user', userMessage || '[Image]');
 
-    // Ajouter un indicateur "Typing..." pour le bot
+    // Ajouter l'indicateur "Typing..."
     const typingIndicator = showTypingIndicator();
 
-    try {
+    // Préparer la requête
+    const formData = new FormData();
+    formData.append('message', userMessage);
+
+    if (imageFile) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            formData.append('image', reader.result.split(',')[1]);
+
+            // Envoyer la requête au serveur
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: userMessage,
+                    image: reader.result.split(',')[1],
+                }),
+            });
+
+            const data = await response.json();
+            removeTypingIndicator(typingIndicator);
+            if (data.response) {
+                addMessage('bot', data.response);
+            } else {
+                addMessage('bot', 'Le bot ne répond pas actuellement.');
+            }
+        };
+        reader.readAsDataURL(imageFile);
+    } else {
+        // Envoyer uniquement le texte
         const response = await fetch('/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: userMessage, imageUrl }),
+            body: JSON.stringify({ message: userMessage }),
         });
 
         const data = await response.json();
-
         removeTypingIndicator(typingIndicator);
         if (data.response) {
             addMessage('bot', data.response);
         } else {
             addMessage('bot', 'Le bot ne répond pas actuellement.');
         }
-    } catch (error) {
-        removeTypingIndicator(typingIndicator);
-        addMessage('bot', 'Erreur lors de la communication avec le serveur.');
     }
 
     chatInput.value = '';
-    fileInput.value = '';
+    imageInput.value = '';
 });
