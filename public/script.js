@@ -1,71 +1,53 @@
 const chatForm = document.querySelector('#chat-form');
 const chatInput = document.querySelector('#chat-input');
 const chatContainer = document.querySelector('#chat-container');
-const imageUpload = document.querySelector('#image-upload');
+const imageInput = document.querySelector('#image-input');
 
-// Fonction pour ajouter un message
+// Fonction pour ajouter un message dans l'interface
 function addMessage(author, message) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', author);
-
-    messageElement.innerHTML = `
-        <div class="text">${message}</div>
-    `;
-
+    messageElement.innerHTML = `<div class="text">${message}</div>`;
     chatContainer.appendChild(messageElement);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// Gérer l'envoi de messages et d'images
+// Gestion de l'envoi de messages
 chatForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const userMessage = chatInput.value.trim();
-    const file = imageUpload.files[0];
+    const imageFile = imageInput.files[0];
 
-    if (!userMessage && !file) {
-        return;
-    }
+    if (!userMessage && !imageFile) return;
 
-    // Ajouter le message utilisateur
-    if (userMessage) addMessage('user', userMessage);
+    addMessage('user', userMessage || 'Image envoyée.');
 
-    if (file) {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        try {
-            // Upload de l'image sur Imgbb
-            const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=6fef3d0d57641305c16bd5c0b5e27426`, {
+    if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const imageData = reader.result.split(',')[1];
+            const response = await fetch('/upload-image', {
                 method: 'POST',
-                body: formData,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageData, prompt: userMessage }),
             });
 
-            const imgbbData = await imgbbResponse.json();
-            if (imgbbData.success) {
-                const imageUrl = imgbbData.data.url;
+            const data = await response.json();
+            addMessage('bot', data.response || "Erreur avec l'image.");
+        };
+        reader.readAsDataURL(imageFile);
+    } else {
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMessage }),
+        });
 
-                // Envoyer le prompt et l'image au serveur
-                const response = await fetch('/upload-image', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ imageUrl, prompt: userMessage }),
-                });
-
-                const data = await response.json();
-                if (data.imageResponse) {
-                    addMessage('bot', `<img src="${data.imageResponse}" alt="Response Image" />`);
-                } else {
-                    addMessage('bot', 'Erreur lors du traitement de l\'image.');
-                }
-            } else {
-                addMessage('bot', 'Erreur lors de l\'upload de l\'image.');
-            }
-        } catch (error) {
-            addMessage('bot', 'Erreur de communication avec le serveur.');
-        }
+        const data = await response.json();
+        addMessage('bot', data.response || "Erreur avec le texte.");
     }
 
     chatInput.value = '';
-    imageUpload.value = '';
+    imageInput.value = '';
 });
