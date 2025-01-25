@@ -1,40 +1,46 @@
-async function sendMessage() {
-  const userInput = document.getElementById("user-input");
+const chatMessages = document.getElementById("chat-messages");
+const userInput = document.getElementById("user-input");
+const typingIndicator = document.getElementById("typing-indicator");
+
+function sendMessage() {
   const message = userInput.value.trim();
+  if (!message) return;
 
-  if (message === "") return;
-
-  displayMessage(message, "user");
+  appendMessage("user", message);
   userInput.value = "";
 
-  // Afficher l'indicateur "Le bot est en train d'écrire..."
-  const typingIndicator = displayMessage("Le bot est en train d'écrire...", "bot");
+  typingIndicator.style.display = "flex";
 
-  try {
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+  fetch("/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      typingIndicator.style.display = "none";
+      appendMessage("bot", data.botMessage);
+    })
+    .catch(() => {
+      typingIndicator.style.display = "none";
+      appendMessage("bot", "Erreur de connexion au serveur.");
     });
-    const data = await response.json();
-
-    // Supprimer l'indicateur et afficher la réponse du bot
-    typingIndicator.remove();
-    displayMessage(data.response, "bot");
-  } catch (error) {
-    typingIndicator.remove();
-    displayMessage("Impossible de se connecter au serveur.", "bot");
-  }
 }
 
-function displayMessage(message, sender) {
-  const chatContainer = document.getElementById("chat-container");
-  const messageElement = document.createElement("div");
-  messageElement.className = `message ${sender}`;
-  messageElement.textContent = message;
+function appendMessage(sender, text) {
+  const messageDiv = document.createElement("div");
+  messageDiv.classList.add("message", sender);
 
-  chatContainer.appendChild(messageElement);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
+  const img = document.createElement("img");
+  img.src = sender === "user" ? "user.jpg" : "chat.jpg";
 
-  return messageElement; // Retourner l'élément pour pouvoir le supprimer si nécessaire
+  const textDiv = document.createElement("div");
+  textDiv.classList.add("text");
+  textDiv.textContent = text;
+
+  messageDiv.appendChild(img);
+  messageDiv.appendChild(textDiv);
+  chatMessages.appendChild(messageDiv);
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
