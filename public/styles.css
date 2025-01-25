@@ -23,7 +23,7 @@ body {
   display: flex;
   align-items: center;
   padding: 10px 15px;
-  background: #0084ff;
+  background: #32CD32;
   color: white;
 }
 
@@ -109,7 +109,7 @@ body {
 .typing-indicator span {
   width: 8px;
   height: 8px;
-  background: #ccc;
+  background: #FF0000;
   border-radius: 50%;
   animation: blink 1.5s infinite;
 }
