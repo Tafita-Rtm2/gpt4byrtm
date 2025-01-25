@@ -1,66 +1,50 @@
 const express = require("express");
-const path = require("path");
 const bodyParser = require("body-parser");
-const fetch = require("node-fetch"); // Assurez-vous d'installer cette bibliothèque
 const session = require("express-session");
+const fetch = require("node-fetch");
 
 const app = express();
 const PORT = 8080;
 
 // Middleware
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static("public"));
 app.use(
   session({
-    secret: "secret-key",
+    secret: "chatbot-secret",
     resave: false,
     saveUninitialized: true,
   })
 );
 
-// Route : Page principale
+// API URL
+const API_URL = "https://yt-video-production.up.railway.app/gpt4-omni";
+
+// Route principale
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(__dirname + "/public/index.html");
 });
 
-// Route : Gestion des messages
-app.post("/api/chat", async (req, res) => {
-  const { message } = req.body;
+// Mémoire des discussions
+app.post("/chat", async (req, res) => {
+  if (!req.session.conversation) req.session.conversation = [];
 
-  if (!req.session.conversation) {
-    req.session.conversation = []; // Initialise la mémoire de la conversation
-  }
-
-  // Ajoutez le message de l'utilisateur à la conversation
-  req.session.conversation.push({ sender: "user", message });
+  const userMessage = req.body.message;
+  req.session.conversation.push({ sender: "user", text: userMessage });
 
   try {
-    // Préparez le contexte (concaténation des messages précédents)
-    const context = req.session.conversation
-      .map((msg) => `${msg.sender === "user" ? "User:" : "Bot:"} ${msg.message}`)
-      .join("\n");
+    const response = await fetch(`${API_URL}?ask=${encodeURIComponent(userMessage)}&userid=1`);
+    const data = await response.json();
 
-    // Appelez l'API avec le contexte
-    const apiResponse = await fetch(
-      `https://yt-video-production.up.railway.app/gpt4-omni?ask=${encodeURIComponent(
-        context
-      )}&userid=1`
-    );
-    const data = await apiResponse.json();
+    const botMessage = data.response || "Je n'ai pas compris.";
+    req.session.conversation.push({ sender: "bot", text: botMessage });
 
-    const botMessage = data.response || "Je ne peux pas répondre maintenant.";
-
-    // Ajoutez la réponse du bot à la conversation
-    req.session.conversation.push({ sender: "bot", message: botMessage });
-
-    res.json({ response: botMessage });
+    res.json({ botMessage });
   } catch (error) {
-    console.error("Erreur API :", error);
-    res.status(500).send("Erreur lors de la connexion au serveur.");
+    console.error("Erreur de l'API :", error);
+    res.status(500).json({ botMessage: "Erreur de connexion au serveur." });
   }
 });
- 
-// Lancer le serveur
-app.listen(PORT, () => {
-  console.log(`Serveur démarré sur http://localhost:${PORT}`);
-});
+
+// Serveur en écoute
+app.listen(PORT, () => console.log(`Serveur démarré : http://localhost:${PORT}`));
