@@ -12,21 +12,18 @@ async function sendMessage() {
   // Réinitialiser l'entrée utilisateur
   userInput.value = "";
 
-  // Appel à l'API
+  // Appel à l'API via le serveur local
   try {
-    const response = await fetch(
-      `https://yt-video-production.up.railway.app/gpt4-omni?ask=${encodeURIComponent(
-        message
-      )}&userid=1`
-    );
+    const response = await fetch(`/api/chat?message=${encodeURIComponent(message)}`);
     const data = await response.json();
 
-    if (data.status === "true") {
+    if (data.response) {
       displayMessage(data.response, "bot");
     } else {
       displayMessage("Une erreur est survenue.", "bot");
     }
   } catch (error) {
+    console.error("Erreur lors de la connexion à l'API :", error);
     displayMessage("Impossible de se connecter au serveur.", "bot");
   }
 }
