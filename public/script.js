@@ -1,120 +1,57 @@
-const chatForm = document.querySelector('#chat-form');
-const chatInput = document.querySelector('#chat-input');
-const imageInput = document.querySelector('#image-input');
-const chatContainer = document.querySelector('#chat-container');
+document.getElementById("send-btn").addEventListener("click", sendMessage);
 
-// Charger les messages sauvegardés au démarrage
-document.addEventListener('DOMContentLoaded', () => {
-    const savedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-    savedMessages.forEach(({ author, message }) => {
-        addMessage(author, message);
-    });
-    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
-});
+async function sendMessage() {
+  const userInput = document.getElementById("user-input");
+  const message = userInput.value.trim();
 
-// Fonction pour ajouter un message
-function addMessage(author, message) {
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message', author);
+  if (message === "") return;
 
-    messageElement.innerHTML = `
-        <img src="${author === 'user' ? 'user.jpg' : 'robot.jpg'}" alt="${author}" />
-        <div class="text">${message}</div>
-    `;
+  // Afficher le message utilisateur
+  displayMessage(message, "user");
 
-    chatContainer.appendChild(messageElement);
-    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
+  // Réinitialiser l'entrée utilisateur
+  userInput.value = "";
 
-    saveMessage(author, message); // Sauvegarder dans LocalStorage
-}
+  // Appel à l'API
+  try {
+    const response = await fetch(
+      `https://yt-video-production.up.railway.app/gpt4-omni?ask=${encodeURIComponent(
+        message
+      )}&userid=1`
+    );
+    const data = await response.json();
 
-// Sauvegarder les messages dans LocalStorage
-function saveMessage(author, message) {
-    const chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-    chatMessages.push({ author, message });
-    localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
-}
-
-// Ajouter une indication de "Typing..."
-function showTypingIndicator() {
-    const typingElement = document.createElement('div');
-    typingElement.classList.add('message', 'bot', 'typing-indicator');
-    typingElement.innerHTML = `
-        <img src="robot.jpg" alt="bot" />
-        <div class="text">Je suis en train de traiter votre réponse...</div>
-    `;
-    chatContainer.appendChild(typingElement);
-    chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll automatique
-    return typingElement;
-}
-
-// Supprimer l'indicateur "Typing..."
-function removeTypingIndicator(typingElement) {
-    if (typingElement) {
-        chatContainer.removeChild(typingElement);
-    }
-}
-
-// Gérer l'envoi de messages
-chatForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const userMessage = chatInput.value.trim();
-    const imageFile = imageInput.files[0];
-
-    if (!userMessage && !imageFile) return;
-
-    // Ajouter le message utilisateur
-    addMessage('user', userMessage || '[Image]');
-
-    // Ajouter l'indicateur "Typing..."
-    const typingIndicator = showTypingIndicator();
-
-    // Préparer la requête
-    const formData = new FormData();
-    formData.append('message', userMessage);
-
-    if (imageFile) {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            formData.append('image', reader.result.split(',')[1]);
-
-            // Envoyer la requête au serveur
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: userMessage,
-                    image: reader.result.split(',')[1],
-                }),
-            });
-
-            const data = await response.json();
-            removeTypingIndicator(typingIndicator);
-            if (data.response) {
-                addMessage('bot', data.response);
-            } else {
-                addMessage('bot', 'Le bot ne répond pas actuellement.');
-            }
-        };
-        reader.readAsDataURL(imageFile);
+    if (data.status === "true") {
+      displayMessage(data.response, "bot");
     } else {
-        // Envoyer uniquement le texte
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: userMessage }),
-        });
-
-        const data = await response.json();
-        removeTypingIndicator(typingIndicator);
-        if (data.response) {
-            addMessage('bot', data.response);
-        } else {
-            addMessage('bot', 'Le bot ne répond pas actuellement.');
-        }
+      displayMessage("Une erreur est survenue.", "bot");
     }
+  } catch (error) {
+    displayMessage("Impossible de se connecter au serveur.", "bot");
+  }
+}
 
-    chatInput.value = '';
-    imageInput.value = '';
-});
+function displayMessage(message, sender) {
+  const chatBody = document.getElementById("chat-body");
+
+  // Créer un conteneur pour le message
+  const messageDiv = document.createElement("div");
+  messageDiv.classList.add("message", sender);
+
+  // Ajouter l'avatar
+  const avatar = document.createElement("img");
+  avatar.src = sender === "user" ? "user.jpg" : "chat.jpg";
+  messageDiv.appendChild(avatar);
+
+  // Ajouter le contenu du message
+  const messageContent = document.createElement("div");
+  messageContent.classList.add("message-content");
+  messageContent.textContent = message;
+  messageDiv.appendChild(messageContent);
+
+  // Ajouter au corps de la conversation
+  chatBody.appendChild(messageDiv);
+
+  // Faire défiler jusqu'au bas
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
