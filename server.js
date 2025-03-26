@@ -1,33 +1,26 @@
 const express = require("express");
 const axios = require("axios");
-const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const PORT = 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Servir les fichiers statiques
 app.use(express.static("public"));
 
-// Route pour interroger l'API
-app.post("/api/chat", async (req, res) => {
-  const { message } = req.body;
-  if (!message) return res.status(400).json({ error: "Message requis" });
+// Route pour gérer la requête à l'API
+app.get("/ask", async (req, res) => {
+    const userMessage = req.query.message;
+    if (!userMessage) return res.json({ response: "❌ Message vide." });
 
-  try {
-    const apiUrl = "https://yt-video-production.up.railway.app/gpt4-omni";
-    const response = await axios.get(apiUrl, {
-      params: { ask: message, userid: "12" },
-    });
-
-    let apiResponse = response.data.response || "Aucune réponse reçue.";
-    apiResponse = apiResponse.replace(/\n\n/g, "<br><br>"); // Gestion des retours à la ligne
-
-    res.json({ response: apiResponse });
-  } catch (error) {
-    res.status(500).json({ error: "Erreur API", details: error.message });
-  }
+    try {
+        const apiUrl = `https://yt-video-production.up.railway.app/gpt4-omni?ask=${encodeURIComponent(userMessage)}&userid=12`;
+        const response = await axios.get(apiUrl);
+        res.json({ response: response.data.response });
+    } catch (error) {
+        res.json({ response: "❌ Erreur de connexion à l'API." });
+    }
 });
 
+// Lancer le serveur
 app.listen(PORT, () => console.log(`Serveur lancé sur http://localhost:${PORT}`));
