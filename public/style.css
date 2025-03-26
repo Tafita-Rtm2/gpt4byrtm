@@ -86,7 +86,7 @@ body {
     display: flex;
     padding: 10px;
     background: #3a3b3c;
-    position: flex;
+    position: fixed;
     bottom: 0;
     width: 90%;
     max-width: 600px;
