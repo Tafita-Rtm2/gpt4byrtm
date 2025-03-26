@@ -38,6 +38,16 @@ body {
     margin: 8px 10px;
     border-radius: 10px;
     word-wrap: break-word;
+    display: flex;
+    align-items: center;
+}
+
+/* Image de profil */
+.message img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
 }
 
 /* Message de l'utilisateur */
@@ -45,6 +55,13 @@ body {
     background: #0078ff;
     color: white;
     align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+/* Image utilisateur */
+.user img {
+    margin-left: 10px;
+    margin-right: 0;
 }
 
 /* Message du bot */
@@ -63,11 +80,15 @@ body {
     cursor: pointer;
 }
 
-/* Zone de saisie */
+/* Zone de saisie (fixée en bas) */
 .input-container {
     display: flex;
     padding: 10px;
     background: #3a3b3c;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 600px;
 }
 
 input {
