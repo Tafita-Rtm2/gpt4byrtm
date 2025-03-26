@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (message === "") return;
 
         addMessage("user", message);
-        userInput.value = "";
+        userInput.value = ""; // Vider la zone de texte
 
         fetch(`/ask?message=${encodeURIComponent(message)}`)
             .then(response => response.json())
