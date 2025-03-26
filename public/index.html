@@ -1,28 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🇲🇬RTM bot Chat V1.0⚙</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot GPT</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">
-      <img src="chat.jpg" alt="Chatbot" class="chat-avatar">
-      <h1>🇲🇬RTM bot Chat V1.0⚙</h1>
+    <div class="chat-container">
+        <div id="chat-box"></div>
+        <div class="input-container">
+            <button id="voice-btn">🎙️</button>
+            <input type="text" id="user-input" placeholder="Écrivez un message...">
+            <button id="send-btn">➤</button>
+        </div>
     </div>
-    <div id="chat-messages" class="chat-messages"></div>
-    <div id="typing-indicator" class="typing-indicator">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-    <div class="input-container">
-      <input type="text" id="user-input" placeholder="Écrivez votre message...">
-      <button onclick="sendMessage()">Envoyer</button>
-    </div>
-  </div>
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
