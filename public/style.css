@@ -1,3 +1,4 @@
+/* Style général */
 body {
     font-family: Arial, sans-serif;
     background: #18191a;
@@ -6,26 +7,63 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    width: 100vw;
     margin: 0;
-}
-
-.chat-container {
-    width: 90%;
-    max-width: 400px;
-    height: 80vh;
-    background: #242526;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
 }
 
+/* Conteneur du chat */
+.chat-container {
+    width: 100%;
+    max-width: 600px;
+    height: 100vh;
+    background: #242526;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Zone des messages */
 #chat-box {
     flex: 1;
     padding: 10px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
+/* Messages */
+.message {
+    max-width: 80%;
+    padding: 10px;
+    margin: 8px 10px;
+    border-radius: 10px;
+    word-wrap: break-word;
+}
+
+/* Message de l'utilisateur */
+.user {
+    background: #0078ff;
+    color: white;
+    align-self: flex-end;
+}
+
+/* Message du bot */
+.bot {
+    background: #3a3b3c;
+    align-self: flex-start;
+}
+
+/* Icône haut-parleur */
+.speaker-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+/* Zone de saisie */
 .input-container {
     display: flex;
     padding: 10px;
@@ -50,11 +88,29 @@ button {
     border-radius: 5px;
 }
 
-.speaker-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: white;
-    font-size: 16px;
-    margin-left: 5px;
+/* Styles pour les tableaux */
+.message table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+    background: white;
+    color: black;
+}
+
+.message table, .message th, .message td {
+    border: 1px solid black;
+}
+
+.message th, .message td {
+    padding: 8px;
+    text-align: left;
+}
+
+/* Styles pour le code */
+.message pre {
+    background: black;
+    color: #00ff00;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
 }
